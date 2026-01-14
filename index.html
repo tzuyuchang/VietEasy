@@ -13,7 +13,7 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     
-    <!-- 【關鍵：匯入你的 30,000 字庫檔案】 -->
+    <!-- 匯入外部單字庫 -->
     <script src="database.js"></script>
 
     <style>
@@ -44,22 +44,95 @@
 <body>
     <div id="loader">
         <div style="width: 40px; height: 40px; border: 4px solid #f3f3f3; border-top: 4px solid #dc2626; border-radius: 50%; animation: spin 1s linear infinite;"></div>
-        <p style="margin-top: 15px; font-weight: bold; color: #64748b;">正在載入 30,000 字庫...</p>
+        <p style="margin-top: 15px; font-weight: bold; color: #64748b;">正在載入學習資源...</p>
     </div>
     <div id="root"></div>
 
     <script>
-        // 文法數據 (可自行在此擴充)
+        // --- 完整文法資料庫 ---
         const GRAMMAR_DATA = [
-            { id: 1, title: "主語 + 動詞 + 賓語", content: "越南文的基本語序與中文完全一致。", example: "Tôi ăn cơm (我吃飯)" },
-            { id: 2, title: "形容詞後置", content: "在越南文中，形容詞要放在名詞後面。", example: "Người đẹp (人 + 美 = 美女)" },
-            { id: 3, title: "否定詞 'Không'", content: "在動詞前面加上 Không 即可否定。", example: "Tôi không biết (我不知道)" }
+            { id: 1, category: "基礎句型", title: "基本語序 (SVO)", content: "越南文語序跟中文幾乎一樣：主詞 + 動詞 + 受詞。", example: "Tôi (我) yêu (愛) Việt Nam (越南)." },
+            { id: 2, category: "基礎句型", title: "定義句 (Là)", content: "「Là」等於中文的「是」。否定用「không phải là」。", example: "Anh ấy là bác sĩ. (他是醫生) / Tôi không phải là giáo viên. (我不是老師)" },
+            { id: 3, category: "基礎句型", title: "形容詞後置", content: "⚠️ 重點：形容詞放在名詞「後面」。這點跟中文相反！", example: "Cô gái đẹp (女孩 + 美 = 美女) / Cà phê sữa (咖啡 + 奶 = 煉乳咖啡)" },
+            { id: 4, category: "時態", title: "正在 (Đang)", content: "在動詞前加「đang」表示動作正在進行。", example: "Anh đang làm gì? (你正在做什麼？)" },
+            { id: 5, category: "時態", title: "已經 (Đã ... rồi)", content: "動詞前加「đã」或句尾加「rồi」表示完成。", example: "Em ăn cơm chưa? (妳吃飯了嗎？) - Em ăn rồi. (我吃飽了)" },
+            { id: 6, category: "時態", title: "將要 (Sẽ)", content: "在動詞前加「sẽ」表示未來計畫。", example: "Ngày mai anh sẽ đi Hà Nội. (明天我將去河內)" },
+            { id: 7, category: "疑問/否定", title: "是非問句 (Có...không)", content: "句型：S + có + V/Adj + không? (有...嗎？/是...嗎？)", example: "Em có mệt không? (妳累嗎？) - Có, em mệt. (是，我累)" },
+            { id: 8, category: "疑問/否定", title: "否定句 (Không)", content: "直接在動詞或形容詞前加「không」。", example: "Anh không thích. (我不喜歡)" },
+            { id: 9, category: "❤️ 戀愛必修", title: "甜蜜稱呼 (Anh & Em)", content: "戀愛中，男生自稱 Anh (哥哥)，稱女生 Em (妹妹)。不論實際年齡大小，這是最親密、甜蜜的叫法。", example: "Anh nhớ em. (我想妳 - 男對女說) / Em yêu anh. (我愛你 - 女對男說)" },
+            { id: 10, category: "❤️ 戀愛必修", title: "想念 (Nhớ)", content: "Nhớ 既是「記得」也是「想念」。", example: "Anh có nhớ em không? (你有想我不？) - Anh rất nhớ em. (我很想妳)" },
+            { id: 11, category: "❤️ 戀愛必修", title: "邀約語氣 (Nhé)", content: "句尾加「nhé」表示提議、邀約，相當於「吧」、「喔」。聽起來很溫柔。", example: "Tối nay đi xem phim nhé? (今晚去看電影好嗎？)" },
+            { id: 12, category: "口語表達", title: "程度副詞 (Rất / Quá)", content: "Rất (很) 放形容詞前。Quá (太...) 放形容詞後，Quá 常用於感嘆。", example: "Rất vui (很高興) / Đẹp quá! (太美了！)" },
+            { id: 13, category: "口語表達", title: "敬語 (Ạ)", content: "對長輩或初次見面，句尾加「ạ」表示禮貌。女生用的話會顯得很乖巧。", example: "Chào anh ạ! (哥哥好！)" }
         ];
 
+        // --- 發音規則資料庫 ---
+        const PRONUNCIATION_DATA = {
+            vowels: [
+                { char: 'a', desc: '嘴巴張大，像中文「阿」', ex: 'ca (杯子)' },
+                { char: 'ă', desc: '短音 a，發音急促，嘴角上揚', ex: 'ăn (吃)' },
+                { char: 'â', desc: '短音，像「厄」，嘴巴放鬆微開', ex: 'cân (斤)' },
+                { char: 'e', desc: '嘴巴扁平，像英文 bed 的 e', ex: 'me (酸角)' },
+                { char: 'ê', desc: '像英文 hey 的 ey，嘴巴扁但緊一點', ex: 'bê (小牛)' },
+                { char: 'i', desc: '嘴角向兩邊拉開，像「一」', ex: 'đi (走)' },
+                { char: 'o', desc: '嘴巴圓，像注音「ㄛ」', ex: 'to (大)' },
+                { char: 'ô', desc: '嘴巴嘟圓，像英文 go', ex: 'cô (姑姑)' },
+                { char: 'ơ', desc: '嘴巴自然張開，像「厄」長音', ex: 'phở (河粉)' },
+                { char: 'u', desc: '嘴巴嘟起，像「烏」', ex: 'thu (秋天)' },
+                { char: 'ư', desc: '像 u 但嘴角向兩邊拉，像咬牙切齒', ex: 'tư (私)' },
+                { char: 'y', desc: '長音的 i，發音與 i 相同', ex: 'y tá (護士)' }
+            ],
+            complex_vowels: [
+                { char: 'ai', desc: '像中文「愛」', ex: 'cái (個)' },
+                { char: 'ao', desc: '像中文「奧」', ex: 'cao (高)' },
+                { char: 'au', desc: '像英文 cow 的 ow，嘴巴最後不圓', ex: 'sau (後)' },
+                { char: 'âu', desc: '像英文 oh，但更短', ex: 'câu (句)' },
+                { char: 'eo', desc: '像貓叫聲「喵」的後段', ex: 'kéo (剪刀)' },
+                { char: 'ia / iê', desc: 'i 滑向 a，像「伊亞」', ex: 'kia (那裡)' },
+                { char: 'ua / uô', desc: 'u 滑向 a，像「烏阿」', ex: 'mua (買)' },
+                { char: 'ưa / ươ', desc: 'ư 滑向 a，像「厄阿」', ex: 'mưa (雨)' },
+                { char: 'yêu', desc: '三母音，像「伊~耶~烏」', ex: 'yêu (愛)' },
+                { char: 'oai', desc: '三母音，像「歪」', ex: 'xoài (芒果)' }
+            ],
+            consonants_start: [
+                { char: 'b', desc: '像ㄅ，不送氣', ex: 'ba (三)' },
+                { char: 'c/k/q', desc: '像ㄍ，不送氣', ex: 'cá (魚)' },
+                { char: 'ch', desc: '像ㄓ，舌面音', ex: 'chị (姊姊)' },
+                { char: 'd/gi', desc: '北部音像 z (za)，南部音像 y (ya)', ex: 'da (皮膚)' },
+                { char: 'đ', desc: '像ㄉ，舌尖頂上齒齦', ex: 'đi (走)' },
+                { char: 'g/gh', desc: '喉音濁輔音，像ㄍ但更深', ex: 'gà (雞)' },
+                { char: 'h', desc: '像ㄏ', ex: 'hoa (花)' },
+                { char: 'kh', desc: '像ㄎ，但有摩擦聲', ex: 'không (不)' },
+                { char: 'l', desc: '像ㄌ', ex: 'là (是)' },
+                { char: 'm', desc: '像ㄇ', ex: 'mẹ (媽媽)' },
+                { char: 'n', desc: '像ㄋ', ex: 'no (飽)' },
+                { char: 'ng/ngh', desc: '鼻音，像 sing 的 ng', ex: 'ngủ (睡)' },
+                { char: 'nh', desc: '像妳好 Nya 的音', ex: 'nhà (家)' },
+                { char: 'p', desc: '字首極少見，像ㄅ', ex: 'pin (電池)' },
+                { char: 'ph', desc: '像ㄈ', ex: 'phở (河粉)' },
+                { char: 'r', desc: '北部像 z，南部像捲舌 r', ex: 'ra (出)' },
+                { char: 's', desc: '北部像 s，南部捲舌 sh', ex: 'sữa (奶)' },
+                { char: 't', desc: '像ㄉ', ex: 'tôi (我)' },
+                { char: 'th', desc: '像ㄊ', ex: 'thích (喜歡)' },
+                { char: 'tr', desc: '北部像 ch，南部捲舌 tr', ex: 'trà (茶)' },
+                { char: 'v', desc: '像 v，上齒咬下唇', ex: 'về (回)' },
+                { char: 'x', desc: '像 s (絲)', ex: 'xe (車)' }
+            ],
+            consonants_end: [
+                { char: '-c / -ch', desc: '急促收尾，嘴巴不開', ex: 'học (學)' },
+                { char: '-n', desc: '舌尖頂上顎，像恩', ex: 'bạn (朋友)' },
+                { char: '-ng', desc: '嘴張開，喉嚨鼻音', ex: 'vâng (是)' },
+                { char: '-nh', desc: '閉氣音，舌面貼上顎', ex: 'xinh (漂亮)' },
+                { char: '-t', desc: '舌尖頂上齒齦收尾', ex: 'tốt (好)' },
+                { char: '-p', desc: '雙唇閉合收尾', ex: 'đẹp (美)' },
+                { char: '-m', desc: '雙唇閉合，像庵', ex: 'cơm (飯)' }
+            ]
+        };
+
         window.onload = () => {
-            // 檢查數據是否成功載入
             if (!window.VIET_DATABASE) {
-                alert("錯誤：找不到 database.js，請檢查檔案名稱是否正確。");
+                 window.VIET_DATABASE = [{ id: 1, level: 'simple', vn: 'Lỗi', phonetic: 'loi', cn: '錯誤', en: 'Error', example: '請確認 database.js 是否存在' }];
+                 alert("提醒：找不到 database.js，請確認檔案是否已上傳至 GitHub。");
             }
             const loader = document.getElementById('loader');
             if (loader) loader.style.display = 'none';
@@ -77,6 +150,7 @@
         const App = () => {
             const [activeTab, setActiveTab] = useState('study');
             const [selectedLevel, setSelectedLevel] = useState('all');
+            const [pronunciationTab, setPronunciationTab] = useState('vowels');
             const [cardIdx, setCardIdx] = useState(0);
             const [isFlipped, setIsFlipped] = useState(false);
             const [masteredIds, setMasteredIds] = useState(() => {
@@ -120,24 +194,73 @@
                         <div className="flex justify-between items-end">
                             <div>
                                 <h1 className="text-2xl font-black tracking-tighter">VIETEASY PRO</h1>
-                                <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest text-white/80">30,000 單字挑戰中</p>
+                                <p className="text-[10px] opacity-70 font-bold uppercase tracking-widest text-white/80">發音、單字、文法全制霸</p>
                             </div>
                             <div className="text-right">
-                                <span className="text-[10px] font-bold bg-white/20 px-2 py-1 rounded">OFFLINE ENABLED</span>
+                                <span className="text-[10px] font-bold bg-white/20 px-2 py-1 rounded">V2.1</span>
                             </div>
                         </div>
                     </header>
 
-                    <div className="bg-white border-b border-slate-200 p-3 flex gap-2 overflow-x-auto no-scrollbar z-10">
-                        {['all', 'simple', 'beginner', 'intermediate', 'upper', 'hard'].map(l => (
-                            <button key={l} onClick={() => {setSelectedLevel(l); setCardIdx(0); setIsFlipped(false);}}
-                                className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedLevel === l ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
-                                {l.toUpperCase()}
-                            </button>
-                        ))}
-                    </div>
+                    {/* Level Bar (Only for Study Tab) */}
+                    {activeTab === 'study' && (
+                        <div className="bg-white border-b border-slate-200 p-3 flex gap-2 overflow-x-auto no-scrollbar z-10">
+                            {['all', 'simple', 'beginner', 'intermediate', 'upper', 'hard'].map(l => (
+                                <button key={l} onClick={() => {setSelectedLevel(l); setCardIdx(0); setIsFlipped(false);}}
+                                    className={`px-4 py-2 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${selectedLevel === l ? 'bg-red-600 text-white shadow-lg' : 'bg-slate-100 text-slate-500'}`}>
+                                    {l.toUpperCase()}
+                                </button>
+                            ))}
+                        </div>
+                    )}
 
-                    <main className="flex-1 overflow-y-auto p-4 relative">
+                    <main className="flex-1 overflow-y-auto p-4 relative pb-24">
+                        {/* 1. 發音區塊 (Pronunciation) */}
+                        {activeTab === 'pronunciation' && (
+                            <div className="space-y-4 animate-in fade-in">
+                                <h2 className="text-xl font-black text-slate-800 px-2 flex items-center gap-2">
+                                    <Icon name="mic" className="w-5 h-5 text-red-500" />
+                                    發音總則
+                                </h2>
+                                
+                                {/* Pronunciation Sub-tabs */}
+                                <div className="flex gap-2 overflow-x-auto no-scrollbar pb-2">
+                                    {[
+                                        {id: 'vowels', label: '單母音'},
+                                        {id: 'complex_vowels', label: '雙/三母音'},
+                                        {id: 'consonants_start', label: '字首子音'},
+                                        {id: 'consonants_end', label: '字尾子音'}
+                                    ].map(sub => (
+                                        <button 
+                                            key={sub.id} 
+                                            onClick={() => setPronunciationTab(sub.id)}
+                                            className={`px-3 py-2 rounded-lg text-xs font-bold whitespace-nowrap transition-colors ${pronunciationTab === sub.id ? 'bg-slate-800 text-white' : 'bg-white border border-slate-200 text-slate-600'}`}
+                                        >
+                                            {sub.label}
+                                        </button>
+                                    ))}
+                                </div>
+
+                                <div className="grid grid-cols-2 gap-3">
+                                    {PRONUNCIATION_DATA[pronunciationTab].map((item, idx) => (
+                                        <div key={idx} className="bg-white p-4 rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-shadow flex flex-col items-center text-center relative"
+                                            onClick={() => speak(item.ex)}>
+                                            <div className="absolute top-2 right-2 text-slate-300">
+                                                <Icon name="volume-2" className="w-4 h-4" />
+                                            </div>
+                                            <div className="text-3xl font-black text-red-600 mb-1">{item.char}</div>
+                                            <p className="text-[10px] text-slate-400 mb-2 font-mono">{item.ex}</p>
+                                            <div className="bg-slate-50 p-2 rounded-lg w-full">
+                                                <p className="text-xs text-slate-600 leading-tight">{item.desc}</p>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <p className="text-center text-xs text-slate-400 mt-4 italic">💡 點擊卡片即可聆聽「範例單字」發音</p>
+                            </div>
+                        )}
+
+                        {/* 2. 學習字卡區塊 (Study) */}
                         {activeTab === 'study' && currentCard ? (
                             <div className="space-y-6">
                                 <div className="flex justify-between items-center px-2">
@@ -148,7 +271,7 @@
                                 <div className="relative h-96 w-full perspective-1000" onClick={() => setIsFlipped(!isFlipped)}>
                                     <div className={`relative w-full h-full transition-all duration-700 transform-style-3d ${isFlipped ? 'rotate-y-180' : ''}`}>
                                         <div className="absolute inset-0 bg-white rounded-[2.5rem] shadow-xl border border-slate-100 flex flex-col items-center justify-center p-8 backface-hidden">
-                                            <h2 className="text-5xl font-black text-slate-800 mb-2">{currentCard.vn}</h2>
+                                            <h2 className="text-5xl font-black text-slate-800 mb-2 text-center leading-tight">{currentCard.vn}</h2>
                                             <p className="text-xl text-blue-500 font-mono mb-12">/{currentCard.phonetic}/</p>
                                             <button onClick={(e) => {e.stopPropagation(); speak(currentCard.vn);}} className="w-20 h-20 bg-red-50 text-red-600 rounded-full flex items-center justify-center shadow-inner active:scale-90 transition-transform">
                                                 <Icon name="volume-2" className="w-10 h-10" />
@@ -165,8 +288,8 @@
                                                     <p className="text-2xl font-bold text-red-400 italic">{currentCard.en}</p>
                                                 </div>
                                             </div>
-                                            <div className="bg-white/5 p-4 rounded-2xl mb-6 text-sm text-slate-300 border border-white/5 italic">
-                                                {currentCard.example}
+                                            <div className="bg-white/5 p-4 rounded-2xl mb-6 text-sm text-slate-300 border border-white/5 italic text-center">
+                                                "{currentCard.example}"
                                             </div>
                                             <button onClick={(e) => {
                                                     e.stopPropagation();
@@ -184,26 +307,40 @@
                                     <button onClick={() => {setIsFlipped(false); setCardIdx(p => (p + 1) % filteredVocab.length)}} className="flex-[2] py-5 bg-slate-900 text-white rounded-3xl shadow-xl font-black active:scale-95 transition-transform">下一張卡片</button>
                                 </div>
                             </div>
-                        ) : (
+                        ) : activeTab === 'study' ? (
                             <div className="flex flex-col items-center justify-center py-20 text-slate-400">
                                 <Icon name="search-x" className="w-16 h-16 mb-4 opacity-20" />
-                                <p className="font-bold">目前無單字資料</p>
+                                <p className="font-bold">載入中或無資料...</p>
                             </div>
-                        )}
+                        ) : null}
 
+                        {/* 3. 文法區塊 (Grammar) */}
                         {activeTab === 'grammar' && (
                             <div className="space-y-4 animate-in slide-in-from-bottom-4">
-                                <h2 className="text-xl font-black text-slate-800 px-2">文法解析</h2>
-                                {GRAMMAR_DATA.map(g => (
-                                    <div key={g.id} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm">
-                                        <h3 className="font-bold text-lg text-red-600 mb-1">{g.title}</h3>
-                                        <p className="text-slate-600 text-sm mb-4">{g.content}</p>
-                                        <div className="bg-slate-50 p-4 rounded-2xl font-mono text-sm border-l-4 border-red-500">{g.example}</div>
+                                <h2 className="text-xl font-black text-slate-800 px-2 flex items-center gap-2">
+                                    <Icon name="book-open" className="w-5 h-5 text-red-500" />
+                                    文法寶典
+                                </h2>
+                                {GRAMMAR_DATA.map((g, idx) => (
+                                    <div key={idx} className="bg-white p-6 rounded-3xl border border-slate-100 shadow-sm relative overflow-hidden">
+                                        <div className="absolute top-0 right-0 bg-slate-100 px-3 py-1 rounded-bl-xl text-[10px] font-bold text-slate-500 uppercase">
+                                            {g.category}
+                                        </div>
+                                        <h3 className="font-bold text-lg text-red-600 mb-2 mt-2">{g.title}</h3>
+                                        <p className="text-slate-600 text-sm mb-4 leading-relaxed">{g.content}</p>
+                                        <div className="bg-red-50 p-4 rounded-2xl text-sm border-l-4 border-red-500 text-slate-700">
+                                            <span className="font-bold text-red-800 text-xs block mb-1">例句：</span>
+                                            {g.example}
+                                        </div>
                                     </div>
                                 ))}
+                                <div className="text-center text-xs text-slate-400 py-4 italic">
+                                    熟讀以上文法，戀愛溝通沒問題！
+                                </div>
                             </div>
                         )}
 
+                        {/* 4. 進度區塊 (Progress) */}
                         {activeTab === 'progress' && (
                             <div className="space-y-6 animate-in zoom-in-95">
                                 <div className="bg-white p-8 rounded-[2.5rem] shadow-sm text-center border border-slate-100">
@@ -214,7 +351,7 @@
                                         </svg>
                                         <div className="absolute inset-0 flex items-center justify-center flex-col">
                                             <span className="text-2xl font-black text-slate-800">{masteredIds.length}</span>
-                                            <span className="text-[8px] text-slate-400 font-bold uppercase">Mastered</span>
+                                            <span className="text-[8px] text-slate-400 font-bold uppercase">已掌握</span>
                                         </div>
                                     </div>
                                     <h3 className="text-xl font-black text-slate-800">學習進度概覽</h3>
@@ -222,10 +359,10 @@
                                 <div className="grid grid-cols-2 gap-4">
                                     <div className="bg-blue-600 p-6 rounded-3xl text-white shadow-lg">
                                         <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">掌握率</p>
-                                        <p className="text-2xl font-black">{((masteredIds.length / (window.VIET_DATABASE?.length || 1)) * 100).toFixed(2)}%</p>
+                                        <p className="text-2xl font-black">{((masteredIds.length / (window.VIET_DATABASE?.length || 1)) * 100).toFixed(1)}%</p>
                                     </div>
                                     <div className="bg-slate-900 p-6 rounded-3xl text-white shadow-lg">
-                                        <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">數據庫總量</p>
+                                        <p className="text-[10px] font-bold opacity-70 uppercase tracking-widest">單字總量</p>
                                         <p className="text-2xl font-black">{(window.VIET_DATABASE?.length || 0).toLocaleString()}</p>
                                     </div>
                                 </div>
@@ -233,8 +370,14 @@
                         )}
                     </main>
 
+                    {/* Bottom Navigation */}
                     <nav className="fixed bottom-0 left-0 right-0 bg-white/80 backdrop-blur-xl border-t border-slate-100 safe-pb px-6 pt-4 flex justify-around max-w-md mx-auto z-30">
-                        {[{id:'study',icon:'layers',label:'學習'}, {id:'grammar',icon:'book-open',label:'文法'}, {id:'progress',icon:'activity',label:'進度'}].map(t => (
+                        {[
+                            {id: 'pronunciation', icon: 'mic', label: '發音'},
+                            {id: 'study', icon: 'layers', label: '字卡'},
+                            {id: 'grammar', icon: 'book-open', label: '文法'},
+                            {id: 'progress', icon: 'activity', label: '進度'}
+                        ].map(t => (
                             <button key={t.id} onClick={() => setActiveTab(t.id)} className={`flex flex-col items-center gap-1 transition-all ${activeTab === t.id ? 'text-red-600 scale-110 font-bold' : 'text-slate-400'}`}>
                                 <Icon name={t.icon} className="w-6 h-6" />
                                 <span className="text-[10px] uppercase tracking-tighter">{t.label}</span>
